@@ -5,8 +5,8 @@ Django + Django REST Framework backend for the BCA minor project.
 ## Setup
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # venv\Scripts\activate on Windows
+python3 -m venv venv
+source venv/bin/activate       
 pip install -r requirements.txt
 
 cp .env.example .env            # then edit .env:
@@ -15,9 +15,9 @@ cp .env.example .env            # then edit .env:
 
 createdb spam_detector          # or create it via psql/pgAdmin
 
-python manage.py migrate
-python manage.py createsuperuser   # optional, for /admin/
-python manage.py runserver         # http://localhost:8000
+python3 manage.py migrate
+python3 manage.py createsuperuser   # optional, for /admin/
+python3 manage.py runserver         # http://localhost:8000
 ```
 
 Run tests: `python manage.py test`
