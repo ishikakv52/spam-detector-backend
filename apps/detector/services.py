@@ -6,7 +6,7 @@ no fine-tuning, no custom ML.
 import json
 import logging
 
-from google import genai
+from groq import Groq
 from django.conf import settings
 
 from .constants import Category
@@ -42,9 +42,9 @@ class GeminiAnalysisError(Exception):
 
 
 def _get_client():
-    if not settings.GEMINI_API_KEY:
-        raise GeminiAnalysisError("GEMINI_API_KEY is not configured on the server.")
-    return genai.Client(api_key=settings.GEMINI_API_KEY)
+    if not settings.GROQ_API_KEY:
+        raise GeminiAnalysisError("GROQ_API_KEY is not configured on the server.")
+    return Groq(api_key=settings.GROQ_API_KEY)
 
 
 def _fallback_category(raw_category: str) -> str:
@@ -65,11 +65,11 @@ def analyze_message(message_text: str) -> dict:
     )
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-120b",
+            messages=[{"role": "user", "content": prompt}],
         )
-        raw_text = (response.text or "").strip()
+        raw_text = (response.choices[0].message.content or "").strip()
     except Exception as exc:  # network errors, quota errors, etc.
         logger.exception("Gemini API call failed")
         raise GeminiAnalysisError("Could not reach the AI analysis service.") from exc

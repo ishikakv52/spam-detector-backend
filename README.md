@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 cp .env.example .env            # then edit .env:
 #  - set DB_* to your local PostgreSQL credentials
-#  - set GEMINI_API_KEY to your key from https://aistudio.google.com/app/apikey
+#  - set GROQ_API_KEY to your key from https://aistudio.google.com/app/apikey
 
 createdb spam_detector          # or create it via psql/pgAdmin
 
