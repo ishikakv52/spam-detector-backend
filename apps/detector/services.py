@@ -1,5 +1,5 @@
 """
-Gemini integration — the only place in the backend that talks to Google's AI.
+Groq integration — the only place in the backend that talks to the AI provider.
 Kept deliberately simple: one prompt, one JSON response, no chat history,
 no fine-tuning, no custom ML.
 """
@@ -37,13 +37,13 @@ Rules:
 """
 
 
-class GeminiAnalysisError(Exception):
-    """Raised when Gemini cannot be reached or returns something unusable."""
+class AIAnalysisError(Exception):
+    """Raised when the AI provider cannot be reached or returns something unusable."""
 
 
 def _get_client():
     if not settings.GROQ_API_KEY:
-        raise GeminiAnalysisError("GROQ_API_KEY is not configured on the server.")
+        raise AIAnalysisError("GROQ_API_KEY is not configured on the server.")
     return Groq(api_key=settings.GROQ_API_KEY)
 
 
@@ -54,9 +54,9 @@ def _fallback_category(raw_category: str) -> str:
 
 def analyze_message(message_text: str) -> dict:
     """
-    Sends `message_text` to Gemini and returns a normalized dict:
+    Sends `message_text` to Groq and returns a normalized dict:
     {classification, category, explanation, suspicious_indicators, safety_suggestion}
-    Raises GeminiAnalysisError on any failure so the view can turn it into a clean 502.
+    Raises AIAnalysisError on any failure so the view can turn it into a clean 502.
     """
     client = _get_client()
     prompt = ANALYSIS_PROMPT.format(
@@ -71,10 +71,10 @@ def analyze_message(message_text: str) -> dict:
         )
         raw_text = (response.choices[0].message.content or "").strip()
     except Exception as exc:  # network errors, quota errors, etc.
-        logger.exception("Gemini API call failed")
-        raise GeminiAnalysisError("Could not reach the AI analysis service.") from exc
+        logger.exception("Groq API call failed")
+        raise AIAnalysisError("Could not reach the AI analysis service.") from exc
 
-    # Gemini sometimes wraps JSON in ```json fences despite instructions — strip them.
+    # The model sometimes wraps JSON in ```json fences despite instructions — strip them.
     cleaned = raw_text.strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.strip("`")
@@ -83,8 +83,8 @@ def analyze_message(message_text: str) -> dict:
     try:
         data = json.loads(cleaned)
     except json.JSONDecodeError as exc:
-        logger.error("Gemini returned non-JSON response: %s", raw_text)
-        raise GeminiAnalysisError("The AI service returned an unexpected response.") from exc
+        logger.error("Groq returned non-JSON response: %s", raw_text)
+        raise AIAnalysisError("The AI service returned an unexpected response.") from exc
 
     classification = "spam" if str(data.get("classification", "")).lower().startswith("spam") else "not_spam"
     indicators = data.get("suspicious_indicators") or []

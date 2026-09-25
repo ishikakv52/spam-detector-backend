@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from .models import Message
 from .selectors import get_user_messages, get_dashboard_stats
-from .services import analyze_message, GeminiAnalysisError
+from .services import analyze_message, AIAnalysisError
 from .serializers import (
     MessageSerializer,
     MessageUpdateSerializer,
@@ -17,7 +17,7 @@ from .serializers import (
 class MessageViewSet(viewsets.ModelViewSet):
     """
     Full CRUD for a user's own messages, plus a POST /messages/analyze/ action
-    that calls Gemini and saves the result in one step.
+    that calls Groq and saves the result in one step.
     A user can only ever see or touch their own records.
     """
     serializer_class = MessageSerializer
@@ -38,7 +38,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     def analyze(self, request):
         """
         Body: {"message_text": "..."}
-        Sends the text to Gemini, saves the result under the current user,
+        Sends the text to Groq, saves the result under the current user,
         and returns the saved record.
         """
         req_serializer = AnalyzeRequestSerializer(data=request.data)
@@ -47,7 +47,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         try:
             result = analyze_message(message_text)
-        except GeminiAnalysisError as exc:
+        except AIAnalysisError as exc:
             return Response(
                 {"detail": str(exc)},
                 status=status.HTTP_502_BAD_GATEWAY,
