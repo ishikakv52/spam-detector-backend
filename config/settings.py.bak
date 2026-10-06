@@ -107,6 +107,3 @@ CORS_ALLOWED_ORIGINS = config(
 )
 
 GROQ_API_KEY = config("GROQ_API_KEY", default="")
-
-DATABASES['default']['OPTIONS'] = {'sslmode': config('DB_SSLMODE', default='prefer')}
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
